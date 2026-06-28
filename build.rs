@@ -33,6 +33,8 @@ fn main() {
     // to bindgen, and lets you build up options for
     // the resulting bindings.
     let bindings = builder
+        // Otherwise it does not run :(
+        .layout_tests(false)
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))

@@ -3,7 +3,8 @@
 #![allow(non_snake_case)]
 
 use std::net::{TcpListener, TcpStream};
-use std::io::{Read, Write};
+use std::io::Read;
+use std::os::raw::c_void;
 use std::thread;
 
 
@@ -14,11 +15,12 @@ fn handle_client(mut stream: TcpStream) {
     while match stream.read(&mut buffer) {
         Ok(size) => {
             println!("Message of size: {:?}", size);
-            /*
-            for chunk in buffer[..size].chunks(16) {
-                println!("  {:02x?}", chunk);
+            unsafe {
+                let mut msg = j_message_new(JMessageType_J_MESSAGE_NONE, size as gsize);
+                let g_stream = g_memory_input_stream_new_from_data(buffer as c_void, )
+                j_message_read(msg, );
             }
-             */
+
             true
         }
         Err(_) => {
@@ -29,15 +31,8 @@ fn handle_client(mut stream: TcpStream) {
 }
 
 fn main() {
-    unsafe {
-        let msg = j_message_new(JMessageType_J_MESSAGE_DB_QUERY, 50);
-        let msg_type =j_message_get_type(msg);
-        println!("{}", msg_type)
-    }
-
     let listener = TcpListener::bind("[::]:4711").unwrap();
     println!("Server listening on port 4711");
-
 
     for stream in listener.incoming() {
         match stream {
