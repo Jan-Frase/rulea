@@ -1,4 +1,5 @@
 use std::env;
+use std::fmt::format;
 use std::path::PathBuf;
 
 fn main() {
@@ -17,8 +18,8 @@ fn main() {
         .clang_arg("-I/home/jan/all/parcio/julea/include");
 
     // GLIB
-    let glib = pkg_config::probe_library("glib-2.0")
-        .expect("Failed to find glib-2.0 via pkg-config");
+    let glib =
+        pkg_config::probe_library("glib-2.0").expect("Failed to find glib-2.0 via pkg-config");
     for path in glib.include_paths {
         builder = builder.clang_arg(format!("-I{}", path.display()));
     }
@@ -27,6 +28,12 @@ fn main() {
     let bson = pkg_config::probe_library("bson2").expect("Failed to find libbson via pkg-config");
     for path in bson.include_paths {
         builder = builder.clang_arg(format!("-I{}", path.display()))
+    }
+
+    // GIO
+    let gio = pkg_config::probe_library("gio-2.0").expect("Failed to find gio via pkg-config.");
+    for path in gio.include_paths {
+        builder = builder.clang_arg(format!("-I{}", path.display()));
     }
 
     // The bindgen::Builder is the main entry point
