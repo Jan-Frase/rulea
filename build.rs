@@ -1,9 +1,16 @@
 use std::env;
-use std::fmt::format;
 use std::path::PathBuf;
+use cbindgen::generate;
+
+extern crate cbindgen;
 
 fn main() {
-    // Tell cargo to look for shared libraries in the specified directory
+    generate_c_to_rust_bindings();
+    generate_rust_to_c_bindings();
+}
+
+fn generate_c_to_rust_bindings() {
+     // Tell cargo to look for shared libraries in the specified directory
     println!("cargo:rustc-link-search=/home/jan/all/parcio/julea/bld");
 
     // Tell cargo to tell rustc to link the system bzip2
@@ -57,4 +64,10 @@ fn main() {
     bindings
         .write_to_file(out_path)
         .expect("Couldn't write bindings!");
+}
+
+fn generate_rust_to_c_bindings() {
+    let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+
+    generate(crate_dir).expect("Unable to generate bindings").write_to_file("bindings.h");
 }

@@ -2,14 +2,20 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
+pub mod types;
+
 use std::io::Read;
 use std::net::{TcpListener, TcpStream};
 use std::os::raw::c_void;
 use std::thread;
+use crate::types::message::Message;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 fn main() {
+    let msg = Message::new();
+    msg.print_hello();
+    
     let listener = TcpListener::bind("[::]:4711").unwrap();
     println!("Server listening on port 4711");
 
@@ -37,7 +43,7 @@ fn buffer_to_msg(mut stream: TcpStream) {
                     None,
                 );
                 j_message_read(msg, g_stream);
-                msg_to_action(msg);
+                msg_to_action(msg, &stream);
             }
 
             true
@@ -52,7 +58,7 @@ fn buffer_to_msg(mut stream: TcpStream) {
     } {}
 }
 
-unsafe fn msg_to_action(msg: *mut JMessage) { unsafe {
+unsafe fn msg_to_action(msg: *mut JMessage, stream: &TcpStream) { unsafe {
     match j_message_get_type(msg) {
         JMessageType_J_MESSAGE_NONE => {}
         JMessageType_J_MESSAGE_PING => {
@@ -69,11 +75,21 @@ unsafe fn msg_to_action(msg: *mut JMessage) { unsafe {
 
             // I'm not loading any back ends currently, so that part gets skipped and the reply sent.
 
-            // I will stop here for now.
             // I neither know how to create the GSocketConnection nor does this appear to be a path worth following.
-            let connection: gpointer = std::ptr::null_mut();
-            j_message_send(reply, connection);
+            // let connection: gpointer = std::ptr::null_mut();
+            // j_message_send(reply, connection);
+
+            msg_send(reply, stream);
         }
         _ => {}
     }
 }}
+
+unsafe fn msg_send(msg: *mut JMessage, stream: &TcpStream) {
+    /*
+    let error = stream.write(reply);
+    if error.is_err() {
+        println!("Error during sending");
+    }
+    */
+}
